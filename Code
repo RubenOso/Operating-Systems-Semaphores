@@ -1,0 +1,118 @@
+/*
+ * Author: [Ruben Osornio]
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
+#include <semaphore.h>
+#include <fcntl.h>
+
+// Define a semaphore for synchronization
+sem_t *sem;
+
+// Define a structure for shared memory to hold the shared counter and process flags
+typedef struct {
+    int counter;            // The shared counter that all processes will increment
+    int printed;            // Flag to indicate if the final counter has been printed
+    int ready[4];           // Flags for each process to signal readiness to the next
+} shared_data_t;
+
+// Function to increment the shared counter by the specified target
+void increment_counter(shared_data_t *data, int target, int process_id) {
+    // Wait for the previous process to complete (except Process 1)
+    if (process_id > 1) {
+        while (data->ready[process_id - 2] == 0); // Wait for the previous process
+    }
+
+    sem_wait(sem);           // Enter critical section
+    for (int i = 0; i < target; i++) {
+        data->counter++;     // Increment the shared counter by one
+    }
+    
+    // Print the current counter value after reaching the target increment for this process
+    printf("From Process %d: counter = %d\n", process_id, data->counter);
+
+    // If this is Process 4, print the final counter message
+    if (process_id == 4 && data->counter == 1100000) {
+        printf("Final counter value by Process %d: %d\n", process_id, data->counter);
+    }
+
+    sem_post(sem);           // Exit critical section
+
+    // Set the ready flag to allow the next process to proceed
+    data->ready[process_id - 1] = 1;
+}
+
+int main() {
+ // Create and initialize semaphore for synchronization
+    sem = sem_open("/sem_sync", O_CREAT, 0644, 1); // Open a named semaphore with initial value 1
+    if (sem == SEM_FAILED) {
+        perror("sem_open");
+        exit(1);
+    }
+
+    // Create shared memory for storing the counter and flags
+    int shm_id = shmget(IPC_PRIVATE, sizeof(shared_data_t), IPC_CREAT | 0666);
+    if (shm_id < 0) {
+        perror("shmget");
+        exit(1);
+    }
+
+    // Attach the shared memory to the parent process
+    shared_data_t *data = (shared_data_t *)shmat(shm_id, NULL, 0);
+
+    // Initialize the shared counter to 0, printed flag to 0, and ready flags to 0
+    data->counter = 0;
+    data->printed = 0;
+    for (int i = 0; i < 4; i++) {
+        data->ready[i] = 0;
+    }
+
+    // Array to store process IDs
+    pid_t pids[4];
+
+    // Create child processes with different increment targets
+    if ((pids[0] = fork()) == 0) {
+        increment_counter(data, 100000, 1); // Process 1 increments by 100,000
+        exit(0);
+    }
+    if ((pids[1] = fork()) == 0) {
+        increment_counter(data, 200000, 2); // Process 2 increments by 200,000
+        exit(0);
+    }
+    if ((pids[2] = fork()) == 0) {
+        increment_counter(data, 300000, 3); // Process 3 increments by 300,000
+        exit(0);
+    }
+    if ((pids[3] = fork()) == 0) {
+        increment_counter(data, 500000, 4); // Process 4 increments by 500,000
+        exit(0);
+    }
+
+    // Wait for all processes to complete and then print child exit messages
+    for (int i = 0; i < 4; i++) {
+        waitpid(pids[i], NULL, 0);  // Wait for each child process to exit
+    }
+// Now print the exit messages in the specified order
+    for (int i = 0; i < 4; i++) {
+        printf("Child with ID %d has just exited\n", pids[i]);
+    }
+
+    // Detach from shared memory and release it after use
+    shmdt(data);
+    shmctl(shm_id, IPC_RMID, NULL);  // Remove the shared memory segment
+
+    // Close and unlink semaphore
+    sem_close(sem);
+    sem_unlink("/sem_sync");
+
+    // Print end of program message
+    printf("End of Program\n");
+
+    return 0;
+}

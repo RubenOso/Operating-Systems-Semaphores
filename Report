@@ -45,7 +45,6 @@ User Time	0.02 seconds
 System Time	0.00 seconds
 CPU Usage	178%
 Memory Usage	Maximum resident size: 1676 kB
-Average Process Wait Time	(To be calculated if applicable)
 4.2 Analysis
 Execution Time: The program’s execution time reflects the time required to manage shared memory and semaphore operations. Synchronization overhead 
 was observed due to semaphore lock/unlock cycles.

@@ -11,6 +11,7 @@ Ensure the following tools are installed on your system:
 C Compiler: GCC (GNU Compiler Collection)
 POSIX Shared Memory Support: Typically available on Unix-like systems
 POSIX Semaphores Support: Ensure your system supports POSIX semaphores
+
 2. Compilation
 
 Open a terminal and navigate to the directory containing your source code files. Compile the code using GCC with the following command:
@@ -19,6 +20,7 @@ bash
 Copy code
 gcc -o OShw2 OShw2.c
 -o OShw2 specifies the output executable name
+
 3. Execution
 
 After successful compilation, execute the program with:
@@ -26,6 +28,7 @@ After successful compilation, execute the program with:
 bash
 Copy code
 ./OShw2
+
 4. Expected Output
 
 The program will display messages indicating the progress of each child process and the final counter value upon completion.

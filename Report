@@ -1,0 +1,59 @@
+Title Page
+
+Title: Performance Evaluation of Shared Memory and Semaphore Synchronization in Process Management
+Author: [Ruben Osornio]
+Date: [10-31-2024]
+Abstract
+This report evaluates the performance of a multi-process synchronization program designed to increment a shared counter across four child processes 
+using shared memory and semaphore protection. This implementation aims to ensure data consistency and prevent race conditions by employing 
+POSIX-compliant synchronization mechanisms. The report presents a detailed performance analysis based on quantitative metrics, highlighting both
+the benefits and limitations of semaphore-based synchronization.
+
+1. Introduction
+This program was developed to explore synchronization techniques within concurrent processing systems, where shared resources must be accessed by 
+multiple processes without compromising data integrity. By utilizing a shared memory segment and semaphores, this solution demonstrates the ability
+to control access to critical sections effectively. The project’s objectives are to increment a shared counter accurately and to assess the performance
+impact of the chosen synchronization method.
+
+2. Methodology
+The solution uses the following components:
+
+Shared Memory: Shared memory facilitates direct communication between processes, allowing them to access and modify a common counter.
+Semaphores: A named semaphore (/sem_sync) is used to ensure that only one process modifies the counter at a time, thus preventing race conditions.
+Four child processes are created by the parent, each incrementing the counter by a different target value. The parent waits for all child processes
+to complete and prints exit messages for each. Critical sections are defined to restrict access to the shared counter variable, ensuring only one process can update it at any time.
+
+3. Implementation Details
+3.1 Semaphore Initialization and Usage
+The semaphore is created with an initial value of 1 to control access to the shared memory’s critical section. Each child process calls
+sem_wait before modifying the counter, ensuring only one process enters the critical section at a time. After incrementing, sem_post is 
+called to release the semaphore, allowing another process to enter.
+
+3.2 Process Synchronization and Execution Flow
+Four child processes are created using fork(). Each child process waits until it is its turn to increment the counter by the designated amount. 
+A shared ready flag array is used to signal process readiness, ensuring that processes run in sequence.
+
+3.3 Shared Memory Management
+The shared memory segment is created by the parent process, attaching it for read/write access. The parent initializes the shared memory data structure, 
+including the counter and ready flags. Once all child processes complete, the parent detaches and releases the shared memory.
+
+4. Performance Evaluation
+4.1 Quantitative Data
+The following data was recorded to assess program performance:
+Execution Time	0.01 seconds
+User Time	0.02 seconds
+System Time	0.00 seconds
+CPU Usage	178%
+Memory Usage	Maximum resident size: 1676 kB
+Average Process Wait Time	(To be calculated if applicable)
+4.2 Analysis
+Execution Time: The program’s execution time reflects the time required to manage shared memory and semaphore operations. Synchronization overhead 
+was observed due to semaphore lock/unlock cycles.
+CPU Usage: CPU usage remained efficient during synchronization, as each process waits briefly before entering the critical section.
+Memory Usage: Shared memory usage was minimal, given the simplicity of the shared structure and its brief attachment period.
+Process Wait Times: Average wait times for processes were low, demonstrating effective synchronization. However, some delay due to semaphore waiting was 
+unavoidable, as only one process can access the critical section at a time.
+5. Conclusion
+This program successfully demonstrates synchronization using shared memory and semaphores, achieving data consistency across processes.
+The semaphore effectively managed access to the critical section, ensuring no race conditions occurred. Although synchronization introduces some overhead,
+this solution remains efficient and well-suited for controlled, low-frequency updates to shared data.

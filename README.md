@@ -1,6 +1,7 @@
 # Operating-Systems-Semaphores
 
-<img width="464" alt="Screenshot 2024-10-29 at 10 17 48 PM" src="https://github.com/user-attachments/assets/41337700-40d8-4b5d-9936-cba4873f764d">
+
+<img width="404" alt="Screenshot 2024-10-31 at 1 10 01 PM" src="https://github.com/user-attachments/assets/5abcdd64-156f-4886-8503-6121c1ad0c6a">
 
 README: Compilation and Execution Instructions
 
@@ -18,8 +19,7 @@ Open a terminal and navigate to the directory containing your source code files.
 
 bash
 Copy code
-gcc -o OShw2 OShw2.c
--o OShw2 specifies the output executable name
+gcc -o OShw2 OShw2.c 
 
 3. Execution
 
